@@ -5,6 +5,11 @@ def initial_load_data(path):
     true_df = pd.read_csv(os.path.join(path, "True.csv"))
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
     return true_df, fake_df
+
+def shuffle_df(df, seed=42):
+    ## Shuffle logic
+    pass
+    
     
 def split_data(true_df, fake_df, train_split=0.8, val_split=0.1, test_split=0.1):
     train_real_df = true_df[:int(len(true_df)*train_split)]

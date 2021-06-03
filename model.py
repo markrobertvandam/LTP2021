@@ -17,18 +17,19 @@ print(torch.__version__)  # this should be at least 1.0.0
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument('train', help="data training file")
-parser.add_argument('dev', help="data dev file")
-parser.add_argument('test', help="data test file")
-parser.add_argument('--iters', help="epochs (iterations)", type=int, default=10)
+parser.add_argument("train", help="data training file")
+parser.add_argument("dev", help="data dev file")
+parser.add_argument("test", help="data test file")
+parser.add_argument("--iters", help="epochs (iterations)", type=int, default=10)
 args = parser.parse_args()
 
 
 # ----------------------------------------------------------
 # Classes/functions related to PyTorch
 
+
 class NN(nn.Module):
-    """ The neural network that will be used """
+    """The neural network that will be used"""
 
     def __init__(self, input_dim, output_dim, embedding):
         """
@@ -57,8 +58,10 @@ class NN(nn.Module):
         Returns:
             the resulting tensor. tensor.shape should be (batch_size, num_classes)
         """
-        x = self.embeddings[x] # every wordid is converted to a 200-dimensional vector
-        x = x.view((100, 500))  # concat approach, translates the 5 vectors into one 1000-dimensional vector
+        x = self.embeddings[x]  # every wordid is converted to a 200-dimensional vector
+        x = x.view(
+            (100, 500)
+        )  # concat approach, translates the 5 vectors into one 1000-dimensional vector
         x = self.fc1(x)
         # ------ Comment the part below to get one-layer network
         x = F.leaky_relu(x)
@@ -76,13 +79,14 @@ class NN(nn.Module):
 
 
 def tensor_desc(x):
-    """ Inspects a tensor: prints its type, shape and content"""
+    """Inspects a tensor: prints its type, shape and content"""
     print("Type:   {}".format(x.type()))
     print("Size:   {}".format(x.size()))
     print("Values: {}".format(x))
 
 
 # ----------------------------------------------------------
+
 
 def get_index(word, word2idx, freeze=False):
     """
@@ -93,7 +97,7 @@ def get_index(word, word2idx, freeze=False):
         return word2idx[word]
     else:
         if not freeze:
-            word2idx[word]=len(word2idx) #new index
+            word2idx[word] = len(word2idx)  # new index
             return word2idx[word]
         else:
             return word2idx["_UNK"]
@@ -116,21 +120,31 @@ def load_data(trainfile, devfile, testfile):
     X_dev_articles = [[get_index(w, word2idx, freeze) for w in x] for x in dev_articles]
 
     X_test_titles = [[get_index(w, word2idx, freeze) for w in x] for x in test_titles]
-    X_test_articles = [[get_index(w, word2idx, freeze) for w in x] for x in test_articles]
+    X_test_articles = [
+        [get_index(w, word2idx, freeze) for w in x] for x in test_articles
+    ]
 
     #    print(X_train[0])
 
     vocab_size = len(word2idx)
     print("#vocabulary size: {}".format(len(word2idx)))
 
-    return (X_train_titles, X_train_articles, train_y, X_dev_titles, X_dev_articles,
-           dev_y, X_test_titles, X_test_articles, test_y, word2idx)
+    return (
+        X_train_titles,
+        X_train_articles,
+        train_y,
+        X_dev_titles,
+        X_dev_articles,
+        dev_y,
+        X_test_titles,
+        X_test_articles,
+        test_y,
+        word2idx,
+    )
 
 
 def open_data(datafile):
-    """
-
-    """
+    """ """
     input = [line.strip().split("\t") for line in open(datafile)]
     titles = [title.split() for title, article, label in input]
     articles = [article.split() for title, article, label in input]
@@ -143,15 +157,30 @@ def open_data(datafile):
 
 ## read input data
 print("load data..")
-X_train_titles, X_train_articles, train_y, X_dev_titles, X_dev_articles, dev_y, X_test_titles, X_test_articles, test_y, word2idx = load_data(args.train, args.dev, args.test)
+(
+    X_train_titles,
+    X_train_articles,
+    train_y,
+    X_dev_titles,
+    X_dev_articles,
+    dev_y,
+    X_test_titles,
+    X_test_articles,
+    test_y,
+    word2idx,
+) = load_data(args.train, args.dev, args.test)
 
-print("#train instances: {}\n#dev instances: {}\n#test instances: {}".format(len(train_y), len(dev_y), len(test_y)))
-assert (len(X_train_titles) == len(train_y))
-assert (len(X_train_articles) == len(train_y))
-assert (len(X_dev_titles) == len(dev_y))
-assert (len(X_dev_articles) == len(dev_y))
-assert (len(X_test_titles) == len(test_y))
-assert (len(X_test_articles) == len(test_y))
+print(
+    "#train instances: {}\n#dev instances: {}\n#test instances: {}".format(
+        len(train_y), len(dev_y), len(test_y)
+    )
+)
+assert len(X_train_titles) == len(train_y)
+assert len(X_train_articles) == len(train_y)
+assert len(X_dev_titles) == len(dev_y)
+assert len(X_dev_articles) == len(dev_y)
+assert len(X_test_titles) == len(test_y)
+assert len(X_test_articles) == len(test_y)
 
 
 vocabulary_size = len(word2idx.keys())
@@ -159,8 +188,8 @@ num_classes = 2
 
 print("#build model")
 if not os.path.exists("data/cc.en.300.bin"):
-    fasttext.util.download_model('en')
-    #TODO: How to save it in embeddings/?
+    fasttext.util.download_model("en")
+    # TODO: How to save it in embeddings/?
 embedding = fasttext.load_model("embeddings/cc.en.300.bin")
 
 # The network should have as input size the vocabulary size and as output size the number of classes
