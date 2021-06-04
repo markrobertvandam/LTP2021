@@ -1,5 +1,8 @@
 import pandas as pd
 import os
+import fasttext
+import fasttext.util
+import shutil
 
 
 def initial_load_data(path):
@@ -7,12 +10,15 @@ def initial_load_data(path):
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
     return true_df, fake_df
 
+
 def shuffle_df(df, seed=42):
-    ## Shuffle logic
-    pass
-    
-    
+    return df.sample(frac=1, random_state=seed).reset_index(drop=True)
+
+
 def split_data(true_df, fake_df, train_split=0.8, val_split=0.1, test_split=0.1):
+    true_df = shuffle_df(true_df)
+    fake_df = shuffle_df(fake_df)
+
     train_real_df = true_df[: int(len(true_df) * train_split)]
     val_real_df = true_df[
         int(len(true_df) * train_split) : int(len(true_df) * (train_split + val_split))
@@ -47,3 +53,14 @@ def load_split_data(path):
     test_df = pd.read_csv(os.path.join(path, "news_test.csv"))
 
     return train_df, val_df, test_df
+
+
+def check_download_embeddings():
+    if not os.path.exists("data\\embeddings"):
+        os.makedirs("data\\embeddings")
+
+    if not os.path.isfile("data\\embeddings\\cc.en.300.bin"):
+        fasttext.util.download_model("en")
+        shutil.move("cc.en.300.bin", "data\\embeddings\\cc.en.300.bin")
+        shutil.move("cc.en.300.bin.gz", "data\\embeddings\\cc.en.300.bin.gz")
+        print("Embeddings downloaded successfully!")
