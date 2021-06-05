@@ -74,21 +74,17 @@ def tensor_desc(x):
 
 # ----------------------------------------------------------
 
-def load_data(trainfile, devfile, testfile):
+def load_data(datafile):
     """load data"""
-    X_train, y_train = open_data(trainfile)
-    X_dev, y_dev = open_data(devfile)
-    X_test, y_test = open_data(testfile)
+    data = np.load(datafile)
+    X_train = data["X_train"]
+    y_train = data["y_train"]
+    X_dev = data["X_dev"]
+    y_dev = data["y_dev"]
+    X_test = data["X_test"]
+    y_test = data["y_test"]
 
     return X_train, y_train, X_dev, y_dev, X_test, y_test
-
-
-def open_data(datafile):
-    """ """
-    inp = [line.strip().split("\t") for line in open(datafile)]
-    x = [embed for embed, label in inp]
-    labels = [label for embed, label in inp]
-    return x, labels
 
 
 # ----------------------------------------------------------
