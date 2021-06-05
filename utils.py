@@ -8,7 +8,19 @@ import shutil
 def initial_load_data(path):
     true_df = pd.read_csv(os.path.join(path, "True.csv"))
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
+    true_df = add_label_column(df=true_df, type=True)
+    fake_df = add_label_column(df=fake_df, type=False)
+
     return true_df, fake_df
+
+
+def add_label_column(df, type=True):
+    if type:
+        df["label"] = [1] * len(df)
+    else:
+        df["label"] = [0] * len(df)
+
+    return df
 
 
 def shuffle_df(df, seed=42):
@@ -35,7 +47,7 @@ def split_data(true_df, fake_df, train_split=0.8, val_split=0.1, test_split=0.1)
     val_df = val_real_df.append(val_fake_df, ignore_index=True)
     test_df = test_real_df.append(test_fake_df, ignore_index=True)
 
-    return train_df, val_df, test_df
+    return shuffle_df(train_df), shuffle_df(val_df), shuffle_df(test_df)
 
 
 def save_split_data(train_df, val_df, test_df, path):

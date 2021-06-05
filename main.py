@@ -50,7 +50,7 @@ def main():
         train_df, val_df, test_df = split_data(true_df, fake_df)
         save_split_data(train_df, val_df, test_df, "data\\splitted")
 
-    preprocess(train_df, val_df, test_df, type_of_model=args.type)
+    #preprocess(train_df, val_df, test_df, type_of_model=args.type)
 
 
 if __name__ == "__main__":
