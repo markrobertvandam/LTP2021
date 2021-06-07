@@ -16,9 +16,7 @@ print(torch.__version__)  # this should be at least 1.0.0
 
 
 parser = argparse.ArgumentParser()
-parser.add_argument("train", help="data training file")
-parser.add_argument("dev", help="data dev file")
-parser.add_argument("test", help="data test file")
+parser.add_argument("preprocessed_data", help="Preprocessed data path")
 parser.add_argument("--iters", help="epochs (iterations)", type=int, default=10)
 args = parser.parse_args()
 
@@ -83,6 +81,8 @@ def load_data(datafile):
     y_dev = data["y_dev"]
     X_test = data["X_test"]
     y_test = data["y_test"]
+    
+    print()
 
     return X_train, y_train, X_dev, y_dev, X_test, y_test
 
@@ -92,7 +92,7 @@ def load_data(datafile):
 
 # read input data
 print("load data..")
-X_train, y_train, X_dev, y_dev, X_test, y_test = load_data(args.train, args.dev, args.test)
+X_train, y_train, X_dev, y_dev, X_test, y_test = load_data(args.preprocessed_data)
 
 print(
     "#train instances: {}\n#dev instances: {}\n#test instances: {}".format(

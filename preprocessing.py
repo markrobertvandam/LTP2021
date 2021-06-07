@@ -69,13 +69,12 @@ if __name__ == "__main__":
         res_val_embeddings = article_embeddings.title_embeddings(val_df)
         res_test_embeddings = article_embeddings.title_embeddings(test_df)
 
-    with open(args.save_path) as out_file:
-        np.savez(
-            out_file,
-            X_train=res_test_embeddings,
-            y_train=train_df["label"],
-            X_val=res_test_embeddings,
-            y_val=val_df["label"],
-            X_test=res_test_embeddings,
-            y_test=test_df["label"],
-        )
+    np.savez(
+        args.save_path,
+        X_train=res_train_embeddings,
+        y_train=train_df["label"],
+        X_val=res_val_embeddings,
+        y_val=val_df["label"],
+        X_test=res_test_embeddings,
+        y_test=test_df["label"],
+    )
