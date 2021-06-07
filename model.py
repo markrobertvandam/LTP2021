@@ -72,19 +72,20 @@ def tensor_desc(x):
 
 # ----------------------------------------------------------
 
+
 def load_data(datafile):
     """load data"""
     data = np.load(datafile)
     X_train = data["X_train"]
     y_train = data["y_train"]
-    X_dev = data["X_dev"]
-    y_dev = data["y_dev"]
+    X_val = data["X_val"]
+    y_val = data["y_val"]
     X_test = data["X_test"]
     y_test = data["y_test"]
-    
+
     print()
 
-    return X_train, y_train, X_dev, y_dev, X_test, y_test
+    return X_train, y_train, X_val, y_val, X_test, y_test
 
 
 # ----------------------------------------------------------
@@ -128,7 +129,7 @@ for epoch in range(num_epochs):
         X_data = X_train[batch_begin:batch_end]
         y_data = y_train[batch_begin:batch_end]
 
-        X_tensor = torch.LongTensor(X_data)
+        X_tensor = torch.FloatTensor(X_data)
         y_tensor = torch.LongTensor(y_data)
 
         optimizer.zero_grad()
@@ -159,7 +160,7 @@ for epoch in range(num_epochs):
         y_data_dev = y_dev[batch_dev_begin:batch_dev_end]
 
         # Convert X_data_dev and y_data_dev into PyTorch tensors X_tensor_dev and y_tensor_dev
-        X_tensor_dev = torch.LongTensor(X_data_dev)
+        X_tensor_dev = torch.FloatTensor(X_data_dev)
         y_tensor_dev = torch.LongTensor(y_data_dev)
 
         y_pred_dev = model(X_tensor_dev)
