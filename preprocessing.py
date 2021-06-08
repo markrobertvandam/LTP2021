@@ -28,6 +28,13 @@ class ArticleEmbeddings:
         idx = text.find("(Reuters) - ")
         return text[12 + idx :] if idx != -1 else text
 
+    @staticmethod
+    def slashed_data(title: str) -> str:
+        """
+        Deals with things like \n or so in the titles
+        """
+        return title.replace("\\", "\\\\")
+
     def text_embedding(self, text: str) -> np.ndarray:
         """
         Get the fasttext embedding for the article
@@ -49,7 +56,7 @@ class ArticleEmbeddings:
         return np.array(out)
 
     def title_embeddings(self, df: pd.DataFrame) -> np.ndarray:
-        return np.array([self.ft.get_sentence_vector(title) for title in df["title"]])
+        return np.array([self.ft.get_sentence_vector(self.slashed_data(title)) for title in df["title"]])
 
 
 if __name__ == "__main__":

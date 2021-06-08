@@ -8,6 +8,15 @@ import shutil
 def initial_load_data(path):
     true_df = pd.read_csv(os.path.join(path, "True.csv"))
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
+
+    # Remove data with identical articles
+    true_df = true_df.drop_duplicates(subset=['text'])
+    fake_df = fake_df.drop_duplicates(subset=['text'])
+
+    # Remove data with identical titles
+    true_df = true_df.drop_duplicates(subset=['title'])
+    fake_df = fake_df.drop_duplicates(subset=['title'])
+
     true_df = add_label_column(df=true_df, type=True)
     fake_df = add_label_column(df=fake_df, type=False)
 

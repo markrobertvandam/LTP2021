@@ -165,9 +165,8 @@ for epoch in range(num_epochs):
 
         y_pred_dev = model(X_tensor_dev)
 
-        output = np.empty((0, 1), int)
-        for i in range(size_batch):
-            output = np.append(output, torch.argmax(y_pred_dev[i]))
+        output = torch.argmax(y_pred_dev, dim=1)
+        print(output,y_data_dev)
         epoch_acc += accuracy_score(output, y_data_dev)
 
     print("    {}".format(epoch_acc / num_batches_dev))
