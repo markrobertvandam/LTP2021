@@ -33,7 +33,7 @@ class ArticleEmbeddings:
         """
         Deals with things like \n or so in the titles
         """
-        return title.replace("\\", "\\\\")
+        return title.replace("\n", r"\n").replace("\t", r"\t")
 
     def text_embedding(self, text: str) -> np.ndarray:
         """
