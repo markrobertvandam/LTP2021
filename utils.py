@@ -1,8 +1,12 @@
+import numpy as np
 import pandas as pd
 import os
 import fasttext
 import fasttext.util
 import shutil
+import torch
+from torch.utils.data import DataLoader
+from sklearn.model_selection import KFold
 
 
 def initial_load_data(path):
@@ -10,12 +14,12 @@ def initial_load_data(path):
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
 
     # Remove data with identical articles
-    true_df = true_df.drop_duplicates(subset=['text'])
-    fake_df = fake_df.drop_duplicates(subset=['text'])
+    true_df = true_df.drop_duplicates(subset=["text"])
+    fake_df = fake_df.drop_duplicates(subset=["text"])
 
     # Remove data with identical titles
-    true_df = true_df.drop_duplicates(subset=['title'])
-    fake_df = fake_df.drop_duplicates(subset=['title'])
+    true_df = true_df.drop_duplicates(subset=["title"])
+    fake_df = fake_df.drop_duplicates(subset=["title"])
 
     true_df = add_label_column(df=true_df, type=True)
     fake_df = add_label_column(df=fake_df, type=False)
@@ -85,3 +89,20 @@ def check_download_embeddings():
         shutil.move("cc.en.300.bin", "data\\embeddings\\cc.en.300.bin")
         shutil.move("cc.en.300.bin.gz", "data\\embeddings\\cc.en.300.bin.gz")
         print("Embeddings downloaded successfully!")
+
+
+def create_cross_validator(n_splits=10):
+    cv = KFold(n_splits=n_splits, shuffle=True, random_state=42)
+    return cv
+
+
+def create_data_loaders(train_data, val_data, batch_size=1000):
+    train_data_loader = DataLoader(
+        dataset=train_data, batch_size=batch_size, shuffle=False
+    )
+    val_data_loader = DataLoader(dataset=val_data, batch_size=100, shuffle=False)
+    return train_data_loader, val_data_loader
+
+
+def concat_X_y(X, y):
+    return list(zip(torch.from_numpy(np.array(X)), torch.from_numpy(np.array(y))))
