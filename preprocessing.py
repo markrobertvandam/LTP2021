@@ -33,7 +33,7 @@ class ArticleEmbeddings:
         """
         Deals with things like \n or so in the titles
         """
-        return title.replace("\n", r"\n").replace("\t", r"\t")
+        return title.replace("\n", r"").replace("\t", r"")
 
     def text_embedding(self, text: str) -> np.ndarray:
         """
@@ -56,7 +56,12 @@ class ArticleEmbeddings:
         return np.array(out)
 
     def title_embeddings(self, df: pd.DataFrame) -> np.ndarray:
-        return np.array([self.ft.get_sentence_vector(self.slashed_data(title)) for title in df["title"]])
+        return np.array(
+            [
+                self.ft.get_sentence_vector(self.slashed_data(title))
+                for title in df["title"]
+            ]
+        )
 
 
 if __name__ == "__main__":

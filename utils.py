@@ -13,13 +13,25 @@ def initial_load_data(path):
     true_df = pd.read_csv(os.path.join(path, "True.csv"))
     fake_df = pd.read_csv(os.path.join(path, "Fake.csv"))
 
+    print("Len before dropping duplicates")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
+
     # Remove data with identical articles
     true_df = true_df.drop_duplicates(subset=["text"])
     fake_df = fake_df.drop_duplicates(subset=["text"])
 
+    print("Len after dropping duplicate articles")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
+
     # Remove data with identical titles
     true_df = true_df.drop_duplicates(subset=["title"])
     fake_df = fake_df.drop_duplicates(subset=["title"])
+
+    print("Len after dropping duplicate titles")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
 
     true_df = add_label_column(df=true_df, type=True)
     fake_df = add_label_column(df=fake_df, type=False)
@@ -97,11 +109,17 @@ def create_cross_validator(n_splits=10):
 
 
 def create_data_loaders(train_data, val_data, batch_size=1000):
-    train_data_loader = DataLoader(
-        dataset=train_data, batch_size=batch_size, shuffle=False
-    )
-    val_data_loader = DataLoader(dataset=val_data, batch_size=100, shuffle=False)
-    return train_data_loader, val_data_loader
+    if val_data is None:
+        train_data_loader = DataLoader(
+            dataset=train_data, batch_size=batch_size, shuffle=False
+        )
+        return train_data_loader, None
+    else:
+        train_data_loader = DataLoader(
+            dataset=train_data, batch_size=batch_size, shuffle=False
+        )
+        val_data_loader = DataLoader(dataset=val_data, batch_size=100, shuffle=False)
+        return train_data_loader, val_data_loader
 
 
 def concat_X_y(X, y):
