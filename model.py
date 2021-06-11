@@ -203,7 +203,7 @@ for train_idx, val_idx in cross_validator.split(train_data):
             # print(output, y_val_batch)
             # epoch_acc += accuracy_score(output, y_data_dev)
             epoch_acc += accuracy_score(output, y_val_batch)
-            val_loss += criterion(output, y_val_batch)
+            val_loss += criterion(y_pred_dev, y_val_batch)
 
         #print("    {}".format(epoch_acc / num_batches_dev))
         print(" Accuracy: {}  validation-loss: {}".format(epoch_acc / len(val_loader), val_loss/len(val_loader)))
@@ -266,7 +266,7 @@ for epoch in range(num_epochs):
         output = torch.argmax(y_pred_test, dim=1)
 
         epoch_acc += accuracy_score(output, y_test_batch)
-        test_loss += criterion(output, y_test_batch)
+        test_loss += criterion(y_pred_test, y_test_batch)
 
     print(" Accuracy: {}  test-loss: {}".format(epoch_acc / len(test_loader), test_loss/len(test_loader)))
 
