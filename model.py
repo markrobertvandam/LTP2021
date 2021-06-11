@@ -175,6 +175,7 @@ for train_idx, val_idx in cross_validator.split(train_data):
 
         print("  Validation")
         epoch_acc = 0
+        val_loss = 0
         #num_batches_dev = len(X_dev) // size_batch
         #print("    #num batches dev: {}".format(num_batches_dev))
         for X_val_batch, y_val_batch in val_loader:
@@ -195,6 +196,7 @@ for train_idx, val_idx in cross_validator.split(train_data):
             #print(output, y_val_batch)
             #epoch_acc += accuracy_score(output, y_data_dev)
             epoch_acc += accuracy_score(output, y_val_batch)
+            val_loss += criterion(output, y_val_batch)
 
         #print("    {}".format(epoch_acc / num_batches_dev))
-        print("    {}".format(epoch_acc / len(val_loader)))
+        print(" Accuracy: {}   Loss: {}".format(epoch_acc / len(val_loader), val_loss/len(val_loader)))
