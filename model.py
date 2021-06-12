@@ -1,3 +1,4 @@
+from early_stopping import EarlyStopping
 import numpy as np
 import argparse
 import torch
@@ -19,8 +20,9 @@ print(torch.__version__)  # this should be at least 1.0.0
 
 parser = argparse.ArgumentParser()
 parser.add_argument("preprocessed_data", help="Preprocessed data path")
-parser.add_argument("save_path", help="Path to save model")
-parser.add_argument("--iters", help="epochs (iterations)", type=int, default=10)
+parser.add_argument("save_path", help="Directory in which the model is saved")
+parser.add_argument("delta_es", help="Delta value for the training", default=0)
+parser.add_argument("--iters", help="epochs (iterations)", type=int, default=20)
 args = parser.parse_args()
 
 
@@ -182,8 +184,8 @@ for train_idx, val_idx in cross_validator.split(train_data):
         print("  Validation")
         epoch_acc = 0
         val_loss = 0
-        #num_batches_dev = len(X_dev) // size_batch
-        #print("    #num batches dev: {}".format(num_batches_dev))
+        # num_batches_dev = len(X_dev) // size_batch
+        # print("    #num batches dev: {}".format(num_batches_dev))
 
         for X_val_batch, y_val_batch in val_loader:
             # for batch in range(num_batches_dev):
@@ -205,8 +207,12 @@ for train_idx, val_idx in cross_validator.split(train_data):
             epoch_acc += accuracy_score(output, y_val_batch)
             val_loss += criterion(y_pred_dev, y_val_batch)
 
-        #print("    {}".format(epoch_acc / num_batches_dev))
-        print(" Accuracy: {}  validation-loss: {}".format(epoch_acc / len(val_loader), val_loss/len(val_loader)))
+        # print("    {}".format(epoch_acc / num_batches_dev))
+        print(
+            " Accuracy: {}  validation-loss: {}".format(
+                epoch_acc / len(val_loader), val_loss / len(val_loader)
+            )
+        )
 
 # Train final model on the whole training data
 
@@ -220,6 +226,11 @@ test_data = concat_X_y(X_final_test, y_final_test)
 
 train_loader, test_loader = create_data_loaders(
     train_data=train_data, val_data=test_data, batch_size=size_batch
+)
+
+# initialize the early_stopping object
+early_stopping = EarlyStopping(
+    patience=2, verbose=False, delta=float(args.delta_es), path=args.save_path
 )
 
 # model initialization for each k-fold
@@ -268,7 +279,13 @@ for epoch in range(num_epochs):
         epoch_acc += accuracy_score(output, y_test_batch)
         test_loss += criterion(y_pred_test, y_test_batch)
 
-    print(" Accuracy: {}  test-loss: {}".format(epoch_acc / len(test_loader), test_loss/len(test_loader)))
+    print(
+        " Accuracy: {}  test-loss: {}".format(
+            epoch_acc / len(test_loader), test_loss / len(test_loader)
+        )
+    )
 
-# Save final model
-torch.save(model.state_dict(), args.save_path)
+    early_stopping(test_loss / len(test_loader), model, epoch)
+    if early_stopping.early_stop:
+        print("Early stopping")
+        break
