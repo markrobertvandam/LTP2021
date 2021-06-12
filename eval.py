@@ -12,6 +12,7 @@ def main():
     args = parser.parse_args()
     with open(args.output) as f:
         avg_training_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+        training_test = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         avg_val_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         avg_val_accuracy = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
         test_loss = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
@@ -23,8 +24,11 @@ def main():
             elif "End epoch" in line:
                 epoch = int(line.split("epoch ")[1][0])
                 if flag == "training":
-                    print(line.split("loss ")[1])
                     avg_training_loss[epoch] += float(line.split("loss ")[1])
+                elif flag == "testing":
+                    print(line.split("loss ")[1])
+                    training_test[epoch] = float(line.split("loss ")[1])
+
             elif "validation-loss" in line:
                 avg_val_loss[epoch] += float(line.split("loss: ")[1])
                 avg_val_accuracy[epoch] += float(line.split("Accuracy: ")[1].split(" validation")[0])
@@ -38,8 +42,8 @@ def main():
             avg_val_accuracy[i] /= 10
 
         plt.figure(1)
-        plt.plot(avg_training_loss, '-b', label='training')
-        plt.plot(avg_val_loss, '-r', label='validation')
+        plt.plot(avg_training_loss[1:], '-b', label='training')
+        plt.plot(avg_val_loss[1:], '-r', label='validation')
         plt.legend(loc='upper right')
         plt.xlabel("epoch")
         plt.ylabel("Loss")
@@ -50,6 +54,20 @@ def main():
         plt.title("Avg. Validation Accuracy during cross-validation")
         plt.xlabel("epoch")
         plt.ylabel("Accuracy")
+
+        plt.figure(3)
+        plt.plot(test_accuracy, '-b')
+        plt.title("Test Accuracy over epochs")
+        plt.xlabel("epoch")
+        plt.ylabel("Accuracy")
+
+        plt.figure(4)
+        plt.plot(training_test[1:], '-b', label='training')
+        plt.plot(test_loss[1:], '-r', label='validation')
+        plt.legend(loc='upper right')
+        plt.xlabel("epoch")
+        plt.ylabel("Loss")
+        plt.title("Test loss vs Training loss")
 
         plt.show()
 
