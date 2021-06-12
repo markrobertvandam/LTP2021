@@ -122,5 +122,5 @@ def create_data_loaders(train_data, val_data, batch_size=1000):
         return train_data_loader, val_data_loader
 
 
-def concat_X_y(X, y):
+def concat_x_y(X, y):
     return list(zip(torch.from_numpy(np.array(X)), torch.from_numpy(np.array(y))))

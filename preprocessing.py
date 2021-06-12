@@ -29,11 +29,11 @@ class ArticleEmbeddings:
         return text[12 + idx :] if idx != -1 else text
 
     @staticmethod
-    def slashed_data(title: str) -> str:
+    def clean_string(string: str) -> str:
         """
-        Deals with things like \n or so in the titles
+        Remove newline and tab characters from a string
         """
-        return title.replace("\n", r"").replace("\t", r"")
+        return string.replace("\n", "").replace("\t", "")
 
     def text_embedding(self, text: str) -> np.ndarray:
         """
@@ -45,6 +45,10 @@ class ArticleEmbeddings:
         return np.mean([self.ft.get_sentence_vector(s.text) for s in art.sents], axis=0)
 
     def text_embeddings(self, df: pd.DataFrame) -> np.ndarray:
+        """
+        Create a numpy array of the text embeddings
+        of the "text" column in the input dataframe
+        """
         out = []
         for i in range(len(df["text"])):
             if i % 1000 == 0:
@@ -56,15 +60,19 @@ class ArticleEmbeddings:
         return np.array(out)
 
     def title_embeddings(self, df: pd.DataFrame) -> np.ndarray:
+        """
+        Create a numpy array of the embeddings using
+        the "title" column in the input dataframe
+        """
         return np.array(
             [
-                self.ft.get_sentence_vector(self.slashed_data(title))
+                self.ft.get_sentence_vector(self.clean_string(title))
                 for title in df["title"]
             ]
         )
 
 
-if __name__ == "__main__":
+def main():
     ap = ArgumentParser()
     args = ap.parse_args()
     true_df, fake_df = initial_load_data(args.data_dir)
@@ -73,20 +81,27 @@ if __name__ == "__main__":
     check_download_embeddings()
     article_embeddings = ArticleEmbeddings(ft_path="data\\embeddings\\cc.en.300.bin")
     if args.embedding_type == "text":
-        res_train_embeddings = article_embeddings.text_embeddings(train_df)
-        res_val_embeddings = article_embeddings.text_embeddings(val_df)
-        res_test_embeddings = article_embeddings.text_embeddings(test_df)
+        func = article_embeddings.text_embeddings
     elif args.embedding_type == "title":
-        res_train_embeddings = article_embeddings.title_embeddings(train_df)
-        res_val_embeddings = article_embeddings.title_embeddings(val_df)
-        res_test_embeddings = article_embeddings.title_embeddings(test_df)
+        func = article_embeddings.title_embeddings
+    else:
+        print("Please select 'text' or 'title' embeddings")
+        exit()
+
+    res_train_embs, res_val_embs, res_test_embs = (
+        func(df) for df in [train_df, val_df, test_df]
+    )
 
     np.savez(
         args.save_path,
-        X_train=res_train_embeddings,
+        X_train=res_train_embs,
         y_train=train_df["label"],
-        X_val=res_val_embeddings,
+        X_val=res_val_embs,
         y_val=val_df["label"],
-        X_test=res_test_embeddings,
+        X_test=res_test_embs,
         y_test=test_df["label"],
     )
+
+
+if __name__ == "__main__":
+    main()
