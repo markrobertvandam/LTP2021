@@ -66,7 +66,7 @@ class ArticleEmbeddings:
         """
         return np.array(
             [
-                self.ft.get_sentence_vector(self.clean_string(title))
+                self.ft.get_sentence_vector(self.clean_string(title.lower()))
                 for title in df["title"]
             ]
         )
