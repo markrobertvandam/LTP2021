@@ -58,7 +58,7 @@ class ArticleEmbeddings:
     def title_embeddings(self, df: pd.DataFrame) -> np.ndarray:
         return np.array(
             [
-                self.ft.get_sentence_vector(self.slashed_data(title))
+                self.ft.get_sentence_vector(self.slashed_data(title.lower()))
                 for title in df["title"]
             ]
         )
