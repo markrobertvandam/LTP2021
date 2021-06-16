@@ -13,12 +13,12 @@ parser.add_argument("plot_path", type=Path, help="Path to save plots")
 def main():
     args = parser.parse_args()
     with open(args.output) as f:
-        avg_training_loss = [0] * 20
-        training_test = [0] * 20
-        avg_val_loss = [0] * 20
-        avg_val_accuracy = [0] * 20
-        test_loss = [0] * 20
-        test_accuracy = [0] * 20
+        avg_training_loss = [0] * 10
+        training_test = [0] * 10
+        avg_val_loss = [0] * 10
+        avg_val_accuracy = [0] * 10
+        test_loss = [0] * 10
+        test_accuracy = [0] * 10
         flag = "training"
         for line in f:
             if "Training final model" in line:
@@ -42,7 +42,7 @@ def main():
                     line.split("Accuracy: ")[1].split(" test")[0]
                 )
 
-        for i in range(20):
+        for i in range(10):
             avg_training_loss[i] /= 10
             avg_val_loss[i] /= 10
             avg_val_accuracy[i] /= 10

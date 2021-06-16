@@ -15,7 +15,9 @@ from utils import (
 class ArgumentParser(Tap):
     embedding_type: str = "title"  # type of embedding, 'text' or 'title'
     data_dir: Path = Path("data/nela_split")  # location of split nela dataframes
-    save_path: Path = Path("data/embeddings.npz")  # save location of created embeddings
+    save_path: Path = Path(
+        "data/title_nela_embeddings.npz"
+    )  # save location of created embeddings
 
 
 class ArticleEmbeddings:
@@ -41,7 +43,13 @@ class ArticleEmbeddings:
         """
         art = self.sp(text)
         assert art.has_annotation("SENT_START")
-        return np.mean([self.ft.get_sentence_vector(s.text) for s in art.sents], axis=0)
+        return np.mean(
+            [
+                self.ft.get_sentence_vector(self.cleanup_title(s.text))
+                for s in art.sents
+            ],
+            axis=0,
+        )
 
     def text_embeddings(self, df: pd.DataFrame) -> np.ndarray:
         """

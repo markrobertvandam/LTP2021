@@ -21,8 +21,8 @@ PYTORCH_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 class ArgParser(Tap):
     preprocessed_data: Path  # Preprocessed data path
     save_path: Path  # Directory in which the model is saved
-    delta_es: float = 0.0  # Delta value for early stopping
-    iters: int = 20  # Number of epochs
+    delta_es: float = 0.007  # Delta value for early stopping
+    iters: int = 10  # Number of epochs
     batch_size: int = 128  # Batch size
 
     def configure(self) -> None:
