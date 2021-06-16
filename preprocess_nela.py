@@ -1,4 +1,5 @@
-import json
+import math
+from typing import Tuple
 import numpy as np
 import pandas as pd
 from tap import Tap
@@ -7,8 +8,6 @@ from pathlib import Path
 from spacy import load
 from utils import (
     load_split_data,
-    save_split_data,
-    split_data,
     check_download_embeddings,
 )
 
@@ -24,6 +23,17 @@ class ArticleEmbeddings:
         self.ft = load_model(ft_path)
         self.sp = load("en_core_web_sm")
 
+    @staticmethod
+    def cleanup_title(title: str) -> str:
+        return title.replace("\n", "").replace("\r", "").replace("\t", " ")
+
+    @staticmethod
+    def __report_progress(i: int) -> None:
+        if i % 1000 == 0:
+            print(f"\n{i}", end="")
+        elif i % 100 == 0:
+            print(".", end="")
+
     def text_embedding(self, text: str) -> np.ndarray:
         """
         Get the fasttext embedding for the article
@@ -38,24 +48,39 @@ class ArticleEmbeddings:
         Create a numpy array of the text embeddings
         of the "text" column in the input dataframe
         """
-        out = []
+        x = []
+        y = []
         for i in range(len(df["text"])):
-            if i % 1000 == 0:
-                print(f"\n{i}", end="")
-            elif i % 100 == 0:
-                print(".", end="")
-            out.append(self.text_embedding(df["text"][i]))
-        print()
-        return np.array(out)
+            self.__report_progress(i)
+            if isinstance(df["text"][i], str):
+                x.append(self.text_embedding(df["text"][i]))
+                y.append(df["label"][i])
 
-    def title_embeddings(self, df: pd.DataFrame) -> np.ndarray:
+        print()
+
+        return np.array(x), np.array(y, dtype=np.uint8)
+
+    def title_embeddings(self, df: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
         """
         Create a numpy array of the embeddings using
         the "title" column in the input dataframe
         """
-        return np.array(
-            [self.ft.get_sentence_vector(title.lower()) for title in df["title"]]
-        )
+        x = []
+        y = []
+        for i in range(len(df["title"])):
+            self.__report_progress(i)
+
+            if isinstance(df["title"][i], str):
+                x.append(
+                    self.ft.get_sentence_vector(
+                        self.cleanup_title(df["title"][i]).lower()
+                    )
+                )
+                y.append(df["label"][i])
+
+        print()
+
+        return np.array(x), np.array(y, dtype=np.uint8)
 
 
 def main():
@@ -74,18 +99,20 @@ def main():
         print("Please select 'text' or 'title' embeddings")
         exit()
 
-    res_train_embs, res_val_embs, res_test_embs = (
+    (train_embs, train_y), (val_embs, val_y), (test_embs, test_y) = (
         func(df) for df in [train_df, val_df, test_df]
     )
 
+    print(train_y.dtype)
+
     np.savez(
         args.save_path,
-        X_train=res_train_embs,
-        y_train=train_df["label"],
-        X_val=res_val_embs,
-        y_val=val_df["label"],
-        X_test=res_test_embs,
-        y_test=test_df["label"],
+        X_train=train_embs,
+        y_train=train_y,
+        X_val=val_embs,
+        y_val=val_y,
+        X_test=test_embs,
+        y_test=test_y,
     )
 
 

@@ -9,13 +9,13 @@ from utils import create_cross_validator, create_data_loaders, concat_x_y
 from operator import itemgetter
 from tap import Tap
 
-from sklearn.metrics import accuracy_score
-
 seed = 1337
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 np.random.seed(seed)
 print(torch.__version__)  # this should be at least 1.0.0
+
+PYTORCH_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class ArgParser(Tap):
@@ -105,15 +105,15 @@ for train_idx, val_idx in cross_validator.split(train_data):
     )
 
     # Model initialization for each k-fold
-    model = NN(300, 2)
+    model = NN(300, 2).to(PYTORCH_DEVICE)
     criterion = nn.NLLLoss()
     optimizer = optim.Adam(params=model.parameters())
     print(f"#Training K-fold: {count_k_fold}")
     for epoch in range(args.iters):
         epoch_loss = 0
         for X_train_batch, y_train_batch in train_loader:
-            X_tensor = torch.FloatTensor(X_train_batch)
-            y_tensor = torch.LongTensor(y_train_batch)
+            X_tensor = X_train_batch.to(PYTORCH_DEVICE)
+            y_tensor = y_train_batch.long().to(PYTORCH_DEVICE)
 
             optimizer.zero_grad()
 
@@ -134,14 +134,14 @@ for train_idx, val_idx in cross_validator.split(train_data):
         for X_val_batch, y_val_batch in val_loader:
             # Convert X_data_dev and y_data_dev into PyTorch
             # tensors X_tensor_dev and y_tensor_dev
-            X_tensor_dev = torch.FloatTensor(X_val_batch)
-            y_tensor_dev = torch.LongTensor(y_val_batch)
+            X_tensor_dev = X_val_batch.to(PYTORCH_DEVICE)
+            y_tensor_dev = y_val_batch.long().to(PYTORCH_DEVICE)
 
             y_pred_dev = model(X_tensor_dev)
 
             output = torch.argmax(y_pred_dev, dim=1)
-            epoch_acc += accuracy_score(output, y_val_batch)
-            val_loss += criterion(y_pred_dev, y_val_batch)
+            epoch_acc += (output == y_tensor_dev).sum().item() / y_tensor_dev.size(0)
+            val_loss += criterion(y_pred_dev, y_tensor_dev)
 
         print(
             f"  Accuracy: {epoch_acc / len(val_loader)}"
@@ -168,7 +168,7 @@ early_stopping = EarlyStopping(
 )
 
 # model initialization for each k-fold
-model = NN(300, 2)
+model = NN(300, 2).to(PYTORCH_DEVICE)
 criterion = nn.NLLLoss()
 optimizer = optim.Adam(params=model.parameters())
 print("Training final model on 80% train data, 20% test data for 10 epochs...")
@@ -176,8 +176,8 @@ for epoch in range(args.iters):
     epoch_loss = 0
     for X_train_batch, y_train_batch in train_loader:
 
-        X_tensor = torch.FloatTensor(X_train_batch)
-        y_tensor = torch.LongTensor(y_train_batch)
+        X_tensor = X_train_batch.to(PYTORCH_DEVICE)
+        y_tensor = y_train_batch.long().to(PYTORCH_DEVICE)
 
         optimizer.zero_grad()
 
@@ -199,15 +199,15 @@ for epoch in range(args.iters):
     for X_test_batch, y_test_batch in test_loader:
         # Convert X_data_dev and y_data_dev into PyTorch
         # tensors X_tensor_dev and y_tensor_dev
-        X_tensor_test = torch.FloatTensor(X_test_batch)
-        y_tensor_test = torch.LongTensor(y_test_batch)
+        X_tensor_test = X_test_batch.to(PYTORCH_DEVICE)
+        y_tensor_test = y_test_batch.long().to(PYTORCH_DEVICE)
 
         y_pred_test = model(X_tensor_test)
 
         output = torch.argmax(y_pred_test, dim=1)
 
-        epoch_acc += accuracy_score(output, y_test_batch)
-        test_loss += criterion(y_pred_test, y_test_batch)
+        epoch_acc += (output == y_tensor_test).sum().item() / y_tensor_test.size(0)
+        test_loss += criterion(y_pred_test, y_tensor_test)
 
     print(
         f"  Accuracy: {epoch_acc / len(test_loader)}"
