@@ -47,6 +47,18 @@ def main():
         if source_label == 2:
             fake_df = pd.concat([fake_df, source_df])
 
+    print("Len before dropping duplicates")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
+
+    # Remove data with identical articles
+    true_df = true_df.drop_duplicates(subset=["text"])
+    fake_df = fake_df.drop_duplicates(subset=["text"])
+
+    print("Len after dropping duplicate articles")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
+
     train_df, val_df, test_df = split_data(true_df, fake_df)
     save_split_data(train_df, val_df, test_df, str(args.save_dir.resolve()))
 
