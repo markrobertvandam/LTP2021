@@ -59,6 +59,14 @@ def main():
     print("True df", len(true_df))
     print("Fake df", len(fake_df))
 
+    # Remove data with identical titles
+    true_df = true_df.drop_duplicates(subset=["title"])
+    fake_df = fake_df.drop_duplicates(subset=["title"])
+
+    print("Len after dropping duplicate titles")
+    print("True df", len(true_df))
+    print("Fake df", len(fake_df))
+
     train_df, val_df, test_df = split_data(true_df, fake_df)
     save_split_data(train_df, val_df, test_df, str(args.save_dir.resolve()))
 
